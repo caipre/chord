@@ -1,0 +1,14 @@
+[package]
+name = "chord"
+version = "0.0.1"
+authors = ["Nick Platt <platt.nicholas@gmail.com>"]
+license = "ISC"
+
+[dependencies]
+bytes = "0.4.6"
+prost = "0.3.0"
+prost-derive = "0.3.0"
+prost-types = "0.3.0"
+
+[build-dependencies]
+prost-build = "0.3.0"

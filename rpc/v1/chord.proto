@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package chord.v1;
+
+import "google/rpc/status.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service NodeAPI {
+    rpc GetNodeInfo(GetNodeInfoRequest) returns (NodeInfo);
+    rpc UpdateNodeInfo(UpdateNodeInfoRequest) returns (NodeInfo);
+
+    rpc GetNodeStatus(GetNodeStatusRequest) returns (NodeStatus);
+    rpc UpdateNodeStatus(UpdateNodeStatusRequest) returns (NodeStatus);
+}
+
+service KeysAPI {
+    rpc ListKeys(Request) returns (Response);
+    rpc GetKey(Request) returns (Response);
+    rpc CreateKey(Request) returns (Response);
+    rpc UpdateKey(Request) returns (Response);
+    rpc DeleteKey(Request) returns (Response);
+}
+
+// NodeAPI
+// 
+
+message GetNodeInfoRequest {}
+message UpdateNodeInfoRequest {
+    NodeInfo node_info = 1;
+}
+
+message GetNodeStatusRequest {}
+message UpdateNodeStatusRequest {
+    bool enabled = 1;
+}
+
+message Node {
+    string id = 1;
+    oneof socket {
+        string unix = 2;
+        string inet = 3;
+    }
+}
+
+message RoutingTableEntry {
+    Node node = 1;
+    string start_key = 2;
+    string end_key = 3;
+}
+
+message RoutingTable {
+    repeated RoutingTableEntry entries = 1;
+}
+
+message NodeInfo {
+    // Output only.
+    Node self = 1;
+
+    Node predecessor = 2;
+    repeated Node successors = 3;
+    RoutingTable routing_table = 4;
+}
+
+message NodeStatus {
+    enum RunState {
+        WAITING = 0;
+        READY   = 1;
+        RUNNING = 2;
+    }
+
+    bool enabled = 1;
+    RunState state = 2;
+}
+
+// KeysAPI
+
+message Request {
+    google.protobuf.Any request = 1;
+    bool localonly = 2;
+}
+
+message Response {
+    // https://github.com/GoogleCloudPlatform/ios-docs-samples/blob/cda5b8089fb741b3e54ef83dca9d4bfe7000c47a/speech/Objective-C/Speech-gRPC-Nonstreaming/google/longrunning/operations.proto#L88-L101
+    oneof result {
+        google.rpc.Status error = 1;
+        google.protobuf.Any response = 2;
+    }
+}
+
+message ListKeysRequest {}
+message ListKeysResponse {
+    repeated Key keys = 1;
+}
+
+message GetKeyRequest {
+    Key key = 1;
+}
+
+message CreateKeyRequest {
+    Key key = 1;
+}
+
+message UpdateKeyRequest {
+    Key key = 1;
+}
+
+message DeleteKeyRequest {
+    Key key = 1;
+}
+message DeleteKeyResponse {}
+
+message Key {
+    // Output only
+    google.protobuf.Timestamp create_time = 1;
+    google.protobuf.Timestamp update_time = 2;
+    Node node = 3;
+
+    string name = 4;
+    bytes data = 5;
+}
