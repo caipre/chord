@@ -53,8 +53,7 @@ impl Node {
 
     /// Return whether node immediately precedes key.
     fn is_p(&self, key: usize) -> bool {
-        Range::half(self.id, self.succ)
-            .contains(key)
+        Range::half(self.id, self.succ).contains(key)
     }
 
     /// Return id of node near to and preceding key.
@@ -83,11 +82,15 @@ struct RangeHalf {
 
 impl Range {
     fn open(start: usize, end: usize) -> RangeOpen {
-        RangeOpen{range: Range { start, end }}
+        RangeOpen {
+            range: Range { start, end },
+        }
     }
 
     fn half(start: usize, end: usize) -> RangeHalf {
-        RangeHalf{range: Range { start, end }}
+        RangeHalf {
+            range: Range { start, end },
+        }
     }
 }
 
@@ -262,7 +265,7 @@ mod tests {
                     assert!(half.contains(imod));
                 }
                 assert!(!open.contains(endmod));
-                assert!( half.contains(endmod));
+                assert!(half.contains(endmod));
                 for i in (end + 1)..(start + modulo) {
                     let imod = i % modulo;
                     assert!(!open.contains(imod));
