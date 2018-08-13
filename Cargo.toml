@@ -5,11 +5,21 @@ authors = ["Nick Platt <platt.nicholas@gmail.com>"]
 license = "ISC"
 
 [dependencies]
-bytes = "^0.4"
-prost = "^0.3"
-prost-derive = "^0.3"
-prost-types = "^0.3"
-quicli = "^0.2"
+bytes = "0.4"
+futures = "0.1"
+http = "0.1"
+prost = "0.4"
+prost-derive = "0.4"
+prost-types = "0.4"
+quicli = "0.2"
+tokio-core = "0.1"
+tower-grpc = { git = "https://github.com/tower-rs/tower-grpc" }
+tower-h2 = { git = "https://github.com/tower-rs/tower-h2" }
+tower-http = { git = "https://github.com/tower-rs/tower-http" }
+tower-service = { git = "https://github.com/tower-rs/tower" }
 
 [build-dependencies]
-prost-build = "^0.3"
+tower-grpc-build = { git = "https://github.com/tower-rs/tower-grpc" }
+
+[dev-dependencies]
+proptest = "0.8"

@@ -1,11 +1,18 @@
-extern crate prost;
-extern crate prost_types;
+#[cfg(test)]
+#[macro_use]
+extern crate proptest;
+
 #[macro_use]
 extern crate prost_derive;
+extern crate prost;
+extern crate prost_types;
+
+extern crate futures;
+extern crate tower_grpc;
 
 use std::collections::HashMap;
 
-mod rpc;
+pub mod rpc;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Entry {
@@ -73,9 +80,11 @@ struct Range {
     start: usize,
     end: usize,
 }
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct RangeOpen {
     range: Range,
 }
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct RangeHalf {
     range: Range,
 }
@@ -248,6 +257,12 @@ mod tests {
         assert_eq!(thr.find_n(6, &m), 0);
         assert_eq!(thr.find_n(7, &m), 0);
     }
+}
+
+#[cfg(test)]
+mod proptests {
+    use super::*;
+    use proptest::prelude::*;
 
     #[test]
     fn test_range_contains() {
@@ -272,6 +287,39 @@ mod tests {
                     assert!(!half.contains(imod));
                 }
             }
+        }
+    }
+
+    prop_compose! {
+        fn arbitrary_range_open()
+            (start in any::<usize>())
+            (start in Just(start), end in start..std::usize::MAX)
+            -> RangeOpen {
+            Range::open(start, end)
+        }
+    }
+
+    prop_compose! {
+        fn arbitrary_key_in(range: &RangeOpen)
+            (key in range.range.start..range.range.end)
+            -> usize {
+            key
+        }
+    }
+
+    prop_compose! {
+        fn arbitrary_key_and_range()
+            (range in arbitrary_range_open())
+            (key in arbitrary_key_in(&range), range in Just(range))
+            -> (usize, RangeOpen) {
+            (key, range)
+        }
+    }
+
+    proptest! {
+        #[test]
+        fn test_range_open((key, range) in arbitrary_key_and_range()) {
+            prop_assert!(range.contains(key));
         }
     }
 }

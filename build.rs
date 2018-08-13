@@ -1,5 +1,9 @@
-extern crate prost_build;
+extern crate tower_grpc_build;
 
 fn main() {
-    prost_build::compile_protos(&["rpc/v1/chord.proto"], &["rpc/v1"]).unwrap();
+    tower_grpc_build::Config::new()
+        .enable_server(true)
+        .enable_client(true)
+        .build(&["proto/v1/chord.proto"], &["proto/v1"])
+        .expect("protobuf compilation failed");
 }
