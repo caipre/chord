@@ -7,15 +7,15 @@ import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 
 service Chord {
-    rpc GetNodeSpec(GetNodeSpecRequest) returns (NodeSpec) {
+    rpc GetNode (EmptyRequest) returns (Node) {
         option (google.api.http) = {
-            get: "/v1/{node.id=node/*/spec}"
+            get: "/v1/node"
         };
     }
 
-    rpc UpdateNodeSpec(UpdateNodeSpecRequest) returns (NodeSpec) {
+    rpc UpdateNode (UpdateNodeRequest) returns (Node) {
         option (google.api.http) = {
-            patch: "/v1/{node.id=node/*/spec}"
+            patch: "/v1/node"
         };
     }
 
@@ -27,7 +27,7 @@ service Chord {
 
     rpc GetKey (GetKeyRequest) returns (Key) {
         option (google.api.http) = {
-            get: "/v1/{key.name=key/*}"
+            get: "/v1/{name=keys/*}"
         };
     }
 
@@ -39,69 +39,29 @@ service Chord {
 
     rpc UpdateKey (UpdateKeyRequest) returns (Key) {
         option (google.api.http) = {
-            patch: "/v1/{key.name=key/*}"
+            patch: "/v1/{name=keys/*}"
         };
     }
 
     // fixme: this should use google.protobuf.Empty
-    rpc DeleteKey (DeleteKeyRequest) returns (Empty) {
+    // https://github.com/tower-rs/tower-grpc/issues/81
+    rpc DeleteKey (DeleteKeyRequest) returns (EmptyResponse) {
         option (google.api.http) = {
-            delete: "/v1/{key.name=key/*}"
+            delete: "/v1/{name=keys/*}"
         };
     }
 }
 
-message GetNodeSpecRequest {
-    NodeAddr node = 1;
-}
+///
 
-message UpdateNodeSpecRequest {
-    NodeSpec info = 1;
+message UpdateNodeRequest {
+    Node node = 1;
     google.protobuf.FieldMask update_mask = 2;
 }
 
-message NodeSpec {
-    // Output only
-    NodeAddr node = 1;
-    RunState state = 2;
-
-    NodeAddr predecessor = 3;
-    repeated NodeAddr successors = 4;
-    RoutingTable routing_table = 5;
-}
-
-message NodeAddr {
-    string id = 1;
-    string addr = 2;
-    Family family = 3;
-}
-
-enum Family {
-    UNIX = 0;
-    INET = 1;
-}
-
-enum RunState {
-    WAITING  = 0;
-    READY    = 1;
-    RUNNING  = 2;
-    DISABLED = 3;
-}
-
-message Entry {
-    NodeAddr node = 1;
-    string start_key = 2;
-    string end_key = 3;
-}
-
-message RoutingTable {
-    repeated Entry entries = 1;
-}
-
-///
-
 message ListKeysRequest {
-    string parent = 1;
+    // Reserved for "parent"
+    reserved 1;
     int32 page_size = 2;
     string page_token = 3;
     int32 total_size = 4;
@@ -113,7 +73,7 @@ message ListKeysResponse {
 }
 
 message GetKeyRequest {
-    Key key = 1;
+    string name = 1;
 }
 
 message CreateKeyRequest {
@@ -129,8 +89,43 @@ message DeleteKeyRequest {
     Key key = 1;
 }
 
-// workaround for https://github .com/tower-rs/tower-grpc/issues/81
-message Empty {}
+///
+
+message Node {
+    string name = 1;
+    RunState state = 2;
+
+    Address predecessor = 3;
+    Routes routing_table = 4;
+    repeated Address successors = 5;
+}
+
+enum RunState {
+    WAITING  = 0;
+    READY    = 1;
+    RUNNING  = 2;
+    DISABLED = 3;
+}
+
+message Address {
+    Family family = 1;
+    string addr = 2;
+}
+
+enum Family {
+    UNIX = 0;
+    INET = 1;
+}
+
+message Routes {
+    repeated Entry entries = 1;
+}
+
+message Entry {
+    Address addr = 1;
+    string start_key = 2;
+    string end_key = 3;
+}
 
 message Key {
     // Output only
@@ -138,9 +133,12 @@ message Key {
     // Output only
     google.protobuf.Timestamp update_time = 2;
     // Output only
-    NodeAddr Node = 3;
+    Address node = 3;
 
     string name = 4;
     bytes data = 5;
     map<string, string> labels = 6;
 }
+
+message EmptyRequest {}
+message EmptyResponse {}
