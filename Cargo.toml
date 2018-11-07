@@ -3,6 +3,7 @@ name = 'chord'
 version = '0.1.0'
 authors = ['Nick Platt <platt.nicholas@gmail.com>']
 license = 'ISC'
+edition = '2018'
 
 [dependencies]
 bytes = '0.4'
@@ -12,6 +13,7 @@ prost = '0.4'
 prost-derive = '0.4'
 prost-types = '0.4'
 quicli = '0.3'
+structopt = '0.2'
 tokio-core = '0.1'
 tower-grpc = { git = 'https://github.com/tower-rs/tower-grpc' }
 tower-h2 = { git = 'https://github.com/tower-rs/tower-h2' }
