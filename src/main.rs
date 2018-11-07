@@ -1,6 +1,4 @@
-#[macro_use]
-extern crate quicli;
-use quicli::prelude::*;
+use quicli::prelude::StructOpt;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "chord")]

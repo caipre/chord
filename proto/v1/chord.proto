@@ -96,7 +96,7 @@ message Node {
     RunState state = 2;
 
     Address predecessor = 3;
-    repeated Route routing_table = 4;
+    repeated Route routes = 4;
     repeated Address successors = 5;
 }
 
