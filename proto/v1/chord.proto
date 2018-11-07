@@ -6,11 +6,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 
-<<<<<<< HEAD
-service Chord {
-=======
 service ChordApi {
->>>>>>> update proto rpc spec
     rpc GetNode (EmptyRequest) returns (Node) {
         option (google.api.http) = {
             get: "/v1/node"
@@ -100,11 +96,7 @@ message Node {
     RunState state = 2;
 
     Address predecessor = 3;
-<<<<<<< HEAD
-    Routes routing_table = 4;
-=======
     repeated Route routes = 4;
->>>>>>> update proto rpc spec
     repeated Address successors = 5;
 }
 
@@ -125,11 +117,7 @@ enum Family {
     INET = 1;
 }
 
-message Routes {
-    repeated Entry entries = 1;
-}
-
-message Entry {
+message Route {
     Address addr = 1;
     string start_key = 2;
     string end_key = 3;

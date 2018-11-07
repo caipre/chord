@@ -1,25 +1,25 @@
 [package]
-name = "chord"
-version = "0.1.0"
-authors = ["Nick Platt <platt.nicholas@gmail.com>"]
-license = "ISC"
+name = 'chord'
+version = '0.1.0'
+authors = ['Nick Platt <platt.nicholas@gmail.com>']
+license = 'ISC'
 
 [dependencies]
-bytes = "0.4"
-futures = "0.1"
-http = "0.1"
-prost = "0.4"
-prost-derive = "0.4"
-prost-types = "0.4"
-quicli = "0.2"
-tokio-core = "0.1"
-tower-grpc = { git = "https://github.com/tower-rs/tower-grpc" }
-tower-h2 = { git = "https://github.com/tower-rs/tower-h2" }
-tower-http = { git = "https://github.com/tower-rs/tower-http" }
-tower-service = { git = "https://github.com/tower-rs/tower" }
+bytes = '0.4'
+futures = '0.1'
+http = '0.1'
+prost = '0.4'
+prost-derive = '0.4'
+prost-types = '0.4'
+quicli = '0.3'
+tokio-core = '0.1'
+tower-grpc = { git = 'https://github.com/tower-rs/tower-grpc' }
+tower-h2 = { git = 'https://github.com/tower-rs/tower-h2' }
+tower-http = { git = 'https://github.com/tower-rs/tower-http' }
+tower-service = { git = 'https://github.com/tower-rs/tower' }
 
 [build-dependencies]
-tower-grpc-build = { git = "https://github.com/tower-rs/tower-grpc" }
+tower-grpc-build = { git = 'https://github.com/tower-rs/tower-grpc' }
 
 [dev-dependencies]
-proptest = "0.8"
+proptest = '0.8'
