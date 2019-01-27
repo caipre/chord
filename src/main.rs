@@ -1,4 +1,5 @@
-use quicli::prelude::StructOpt;
+use quicli::prelude::*;
+use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "chord")]
