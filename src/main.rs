@@ -3,7 +3,7 @@ use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "chord")]
-struct Chord {
+struct ChordCli {
     #[structopt(subcommand)]
     cmd: Command,
 }
@@ -34,6 +34,6 @@ enum KeysCmd {
 }
 
 fn main() {
-    let chord = Chord::from_args();
+    let chord = ChordCli::from_args();
     println!("{:?}", chord);
 }

@@ -1,4 +1,5 @@
 pub mod rpc;
+pub mod srv;
 
 //#[derive(Debug, Clone, PartialEq, Eq)]
 //pub struct Entry {

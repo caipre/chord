@@ -1,3 +1,4 @@
+//! Traits and types for the Chord API
 
 mod chord {
     pub mod v1 {
