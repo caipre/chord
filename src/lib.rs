@@ -1,14 +1,3 @@
-#[cfg(test)]
-#[macro_use]
-extern crate proptest;
-
-#[macro_use]
-extern crate prost_derive;
-extern crate prost;
-extern crate prost_types;
-
-use std::collections::HashMap;
-
 pub mod rpc;
 
 //#[derive(Debug, Clone, PartialEq, Eq)]
