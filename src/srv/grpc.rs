@@ -14,7 +14,7 @@ use crate::rpc::v1::UpdateKeyRequest;
 use crate::rpc::v1::UpdateNodeRequest;
 
 #[derive(Clone)]
-struct ChordService;
+pub struct ChordService;
 
 impl Chord for ChordService {
     type GetNodeFuture = FutureResult<Response<Node>, Error>;
