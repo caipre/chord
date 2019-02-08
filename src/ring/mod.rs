@@ -1,3 +1,6 @@
+//! Implementation of a Chord system
+//! https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf
+
 use std::collections::HashMap;
 
 #[cfg(test)]
@@ -20,7 +23,7 @@ impl Entry {
 struct Node {
     id: usize,
     state: RunState,
-    succ: usize,
+    next: usize,
     tabl: Vec<Entry>,
 }
 
@@ -35,11 +38,11 @@ enum RunState {
 
 impl Node {
     fn new(id: usize, tabl: Vec<Entry>) -> Node {
-        let succ = tabl.first().map(|e| e.node).unwrap();
+        let next = tabl.first().map(|e| e.node).unwrap();
         Node {
             id: id,
             state: RunState::Starting,
-            succ: succ,
+            next: next,
             tabl: tabl,
         }
     }
@@ -49,10 +52,10 @@ impl Node {
 // Chord key resolution logic
 //
 impl Node {
-    // Return id of node responsible for key.
+    /// Return id of node responsible for key.
     fn find_n(&self, key: usize, ring: &HashMap<usize, Node>) -> usize {
         let id = self.find_p(key, ring);
-        ring.get(&id).unwrap().succ
+        ring.get(&id).unwrap().next // fixme: this should make an rpc
     }
 
     /// Return id of node immediately preceding key.
@@ -60,14 +63,14 @@ impl Node {
         let mut n = self;
         while !n.is_p(key) {
             let id = n.next_p(key);
-            n = ring.get(&id).unwrap();
+            n = ring.get(&id).unwrap(); // fixme: this should make an rpc
         }
         n.id
     }
 
     /// Return whether node immediately precedes key.
     fn is_p(&self, key: usize) -> bool {
-        Range::half(self.id, self.succ).contains(key)
+        Range::half(self.id, self.next).contains(key)
     }
 
     /// Return id of node near to and preceding key.
