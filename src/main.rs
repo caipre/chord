@@ -43,7 +43,8 @@ fn main() {
         },
 
         Command::node(NodeCmd::info) => {
-            let client = chord::cli::grpc::new();
+            let client = chord::cli::grpc::client();
+            chord::cli::grpc::get_node_info(client);
         },
 
         _ => unimplemented!()
