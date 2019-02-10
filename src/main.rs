@@ -40,11 +40,10 @@ fn main() {
     match chord.cmd {
         Command::node(NodeCmd::start) => {
             chord::srv::grpc::start("");
-        },
+        }
 
-        Command::node(NodeCmd::info) => {
-        },
+        Command::node(NodeCmd::info) => {}
 
-        _ => unimplemented!()
+        _ => unimplemented!(),
     }
 }

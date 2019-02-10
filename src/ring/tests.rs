@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use proptest::*;
 use proptest::prelude::*;
+use proptest::*;
 
 use super::*;
 
@@ -10,31 +10,19 @@ fn fixture_figure_3b() -> HashMap<usize, Node> {
 
     let node = Node::new(
         0,
-        vec![
-            Entry::new(1, 1),
-            Entry::new(2, 3),
-            Entry::new(4, 0),
-        ],
+        vec![Entry::new(1, 1), Entry::new(2, 3), Entry::new(4, 0)],
     );
     m.insert(node.id, node);
 
     let node = Node::new(
         1,
-        vec![
-            Entry::new(2, 3),
-            Entry::new(3, 3),
-            Entry::new(5, 0),
-        ],
+        vec![Entry::new(2, 3), Entry::new(3, 3), Entry::new(5, 0)],
     );
     m.insert(node.id, node);
 
     let node = Node::new(
         3,
-        vec![
-            Entry::new(4, 0),
-            Entry::new(5, 0),
-            Entry::new(7, 0),
-        ],
+        vec![Entry::new(4, 0), Entry::new(5, 0), Entry::new(7, 0)],
     );
     m.insert(node.id, node);
 

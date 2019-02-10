@@ -20,7 +20,9 @@ use tower_util::MakeService;
 
 use crate::rpc::v1::client::Chord;
 
-pub fn connect(addr: &'static str) -> impl Future<Item=AddOrigin<Connection<TcpStream, DefaultExecutor, BoxBody>>, Error=()> {
+pub fn connect(
+    addr: &'static str,
+) -> impl Future<Item = AddOrigin<Connection<TcpStream, DefaultExecutor, BoxBody>>, Error = ()> {
     let dst = Dst::from_str(addr).unwrap();
     let mut h2 = Connect::new(dst, Default::default(), DefaultExecutor::current());
     h2.make_service(())
@@ -30,10 +32,7 @@ pub fn connect(addr: &'static str) -> impl Future<Item=AddOrigin<Connection<TcpS
                 .authority(http::uri::Authority::from_str(addr).unwrap())
                 .build()
                 .unwrap();
-            add_origin::Builder::new()
-                .uri(uri)
-                .build(conn)
-                .unwrap()
+            add_origin::Builder::new().uri(uri).build(conn).unwrap()
         })
         .map_err(|err| eprintln!("failed to connect; err={:?}", err))
 }
@@ -41,7 +40,6 @@ pub fn connect(addr: &'static str) -> impl Future<Item=AddOrigin<Connection<TcpS
 struct Dst {
     addr: SocketAddr,
 }
-
 
 impl FromStr for Dst {
     type Err = std::net::AddrParseError;

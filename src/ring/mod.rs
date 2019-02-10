@@ -15,7 +15,11 @@ struct Entry {
 
 impl Entry {
     fn new(start: usize, node: usize) -> Entry {
-        Entry { uri: String::from(""), start, node }
+        Entry {
+            uri: String::from(""),
+            start,
+            node,
+        }
     }
 }
 
@@ -47,7 +51,6 @@ impl Node {
         }
     }
 }
-
 
 // Chord key resolution logic
 //

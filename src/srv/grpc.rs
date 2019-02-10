@@ -6,20 +6,20 @@ use futures::future::FutureResult;
 use futures::stream::Stream;
 use tokio::executor::DefaultExecutor;
 use tokio::net::TcpListener;
-use tower_grpc::{Request, Response};
 use tower_grpc::{Code, Error, Status};
+use tower_grpc::{Request, Response};
 use tower_h2::Server;
 
-use crate::rpc::v1::{Key, KeyMeta, Node};
-use crate::rpc::v1::{EmptyRequest, EmptyResponse};
-use crate::rpc::v1::{ListKeysRequest, ListKeysResponse};
+use crate::rpc::v1::server::Chord;
+use crate::rpc::v1::server::ChordServer;
 use crate::rpc::v1::CreateKeyRequest;
 use crate::rpc::v1::DeleteKeyRequest;
 use crate::rpc::v1::GetKeyRequest;
-use crate::rpc::v1::server::Chord;
-use crate::rpc::v1::server::ChordServer;
 use crate::rpc::v1::UpdateKeyRequest;
 use crate::rpc::v1::UpdateNodeRequest;
+use crate::rpc::v1::{EmptyRequest, EmptyResponse};
+use crate::rpc::v1::{Key, KeyMeta, Node};
+use crate::rpc::v1::{ListKeysRequest, ListKeysResponse};
 
 #[derive(Clone)]
 pub struct ChordService;
@@ -80,7 +80,8 @@ pub fn start<A: ToSocketAddrs>(_addrs: A) {
     let addr = "[::1]:32031".parse().unwrap();
     let bind = TcpListener::bind(&addr).unwrap();
 
-    let serve = bind.incoming()
+    let serve = bind
+        .incoming()
         .fold(h2, |mut h2, sock| {
             if let Err(e) = sock.set_nodelay(true) {
                 return Err(e);
@@ -88,10 +89,7 @@ pub fn start<A: ToSocketAddrs>(_addrs: A) {
 
             println!("incoming connection: {:?}", sock);
 
-            tokio::spawn({
-                h2.serve(sock)
-                    .map_err(|e| eprintln!("h2 error: {:?}", e))
-            });
+            tokio::spawn({ h2.serve(sock).map_err(|e| eprintln!("h2 error: {:?}", e)) });
 
             Ok(h2)
         })
