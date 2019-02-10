@@ -1,4 +1,8 @@
+use std::io;
+use std::net::SocketAddr;
 use std::net::SocketAddrV6;
+use std::net::ToSocketAddrs;
+use std::str::FromStr;
 
 use futures::Future;
 use tokio::executor::DefaultExecutor;
@@ -16,52 +20,37 @@ use tower_util::MakeService;
 
 use crate::rpc::v1::client::Chord;
 
-pub fn new() {
-    let uri: http::Uri = "http://[::1]:32031".parse().unwrap();
-
-    let mut h2 = Connect::new(Dst, Default::default(), DefaultExecutor::current());
-    let request = h2.make_service(())
-        .map(move |conn| {
-            use crate::rpc::v1::client::Chord;
-            use tower_http::add_origin;
-
-            let conn = add_origin::Builder::new()
-                .uri(uri)
-                .build(conn)
-                .unwrap();
-
-            Chord::new(conn)
-        })
-        .and_then(|mut client| {
-            use crate::rpc::v1::EmptyRequest;
-
-            client.get_node(Request::new(EmptyRequest {}))
-                .map_err(|err| panic!("grpc request failed; err={:?}", err))
-        })
-        .and_then(|response| {
-            println!("resp={:?}", response);
-            Ok(())
-        })
-        .map_err(|err| println!("resp failed; err={:?}", err));
-
-    tokio::run(request);
-}
-
-pub fn client() -> impl Future<Item=Chord<AddOrigin<Connection<TcpStream, DefaultExecutor, BoxBody>>>, Error=()> {
-    let mut h2 = Connect::new(Dst, Default::default(), DefaultExecutor::current());
+pub fn connect(addr: &'static str) -> impl Future<Item=AddOrigin<Connection<TcpStream, DefaultExecutor, BoxBody>>, Error=()> {
+    let dst = Dst::from_str(addr).unwrap();
+    let mut h2 = Connect::new(dst, Default::default(), DefaultExecutor::current());
     h2.make_service(())
         .map(move |conn| {
-            let conn = add_origin::Builder::new()
-                .uri("http://[::1]:32031".parse::<http::Uri>().unwrap())
-                .build(conn)
+            let uri = http::Uri::builder()
+                .scheme(http::uri::Scheme::HTTP)
+                .authority(http::uri::Authority::from_str(addr).unwrap())
+                .build()
                 .unwrap();
-
-            Chord::new(conn)
+            add_origin::Builder::new()
+                .uri(uri)
+                .build(conn)
+                .unwrap()
         })
         .map_err(|err| eprintln!("failed to connect; err={:?}", err))
 }
 
-struct Dst;
+struct Dst {
+    addr: SocketAddr,
+}
+
+
+impl FromStr for Dst {
+    type Err = std::net::AddrParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let addr = SocketAddr::from_str(s)?;
+        Ok(Dst { addr })
+    }
+}
 
 impl tokio_connect::Connect for Dst {
     type Connected = TcpStream;
@@ -69,6 +58,6 @@ impl tokio_connect::Connect for Dst {
     type Future = ConnectFuture;
 
     fn connect(&self) -> Self::Future {
-        TcpStream::connect(&"[::1]:32031".parse::<SocketAddrV6>().unwrap().into())
+        TcpStream::connect(&self.addr)
     }
 }
