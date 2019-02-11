@@ -36,6 +36,4 @@ enum KeysCmd {
 
 fn main() {
     let chord = ChordCli::from_args();
-
-    let client = chord::cli::grpc::Client::new();
 }
