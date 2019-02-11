@@ -1,9 +1,6 @@
-use std::collections::HashMap;
-
-use proptest::prelude::*;
 use proptest::*;
-
-use super::*;
+use proptest::prelude::*;
+use std::collections::HashMap;
 
 fn fixture_figure_3b() -> HashMap<usize, Node> {
     let mut m = HashMap::new();

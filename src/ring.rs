@@ -1,10 +1,4 @@
-//! Implementation of a Chord system
-//! https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf
-
 use std::collections::HashMap;
-
-#[cfg(test)]
-mod tests;
 
 #[derive(Debug)]
 struct Entry {
