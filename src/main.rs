@@ -37,13 +37,5 @@ enum KeysCmd {
 fn main() {
     let chord = ChordCli::from_args();
 
-    match chord.cmd {
-        Command::node(NodeCmd::start) => {
-            chord::srv::grpc::start("");
-        }
-
-        Command::node(NodeCmd::info) => {}
-
-        _ => unimplemented!(),
-    }
+    let client = chord::cli::grpc::Client::new();
 }
