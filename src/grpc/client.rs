@@ -1,3 +1,16 @@
+use {
+    tokio::{
+        executor::DefaultExecutor,
+        net::TcpStream,
+        prelude::*,
+    },
+    tower_grpc::BoxBody,
+    tower_h2::client::Connection,
+    tower_http::AddOrigin,
+};
+
+use chord_rpc::v1::client::Chord;
+
 pub struct Client {
     client: Chord<AddOrigin<Connection<TcpStream, DefaultExecutor, BoxBody>>>,
 }
