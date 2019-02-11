@@ -21,8 +21,7 @@ use tower_util::MakeService;
 use crate::rpc::v1::client::Chord;
 
 pub struct Client {
-    client: Chord<
-        AddOrigin<Connection<TcpStream, DefaultExecutor, BoxBody>>>,
+    client: Chord<AddOrigin<Connection<TcpStream, DefaultExecutor, BoxBody>>>,
 }
 
 impl Client {
@@ -37,10 +36,7 @@ impl Client {
             })
             .map(move |conn| {
                 use tower_http::add_origin::Builder;
-                let conn = Builder::new()
-                    .uri(uri)
-                    .build(conn)
-                    .unwrap();
+                let conn = Builder::new().uri(uri).build(conn).unwrap();
 
                 Chord::new(conn)
             })
