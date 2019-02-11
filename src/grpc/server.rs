@@ -30,27 +30,16 @@ impl ChordService {
 
     pub fn serve(self, addr: &SocketAddr) {
         let service = ChordServer::new(self);
-        let mut h2 = Server::new(service, Default::default(), DefaultExecutor::current());
+        let mut http2 = Server::new(service, Default::default(), DefaultExecutor::current());
 
-        info!("starting chord server addr={}", addr);
-        
         let serve = TcpListener::bind(addr).unwrap()
             .incoming()
-            .fold(h2, |mut h2, sock| {
-                if let Err(e) = sock.set_nodelay(true) {
-                    return Err(e);
-                }
-
-                info!("incoming connection: {:?}", sock);
-
-                tokio::spawn({
-                    h2.serve(sock).map_err(|e| error!("h2 error: {:?}", e))
-                });
-
-                Ok(h2)
-            })
-            .map_err(|e| error!("accept error: {}", e))
-            .map(|_| {});
+            .map_err(|err| error!("accept failed; err={}", err))
+            .for_each(move |sock| {
+                tokio::spawn(
+                    http2.serve(sock)
+                        .map_err(|err| error!("http/2 failed; err={:?}", err)))
+            });
 
         tokio::run(serve);
     }
