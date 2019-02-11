@@ -1,0 +1,10 @@
+language: rust
+
+os:
+- linux
+
+rust:
+- nightly
+
+script:
+- cargo test --all --all-features
