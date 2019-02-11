@@ -1,5 +1,9 @@
-use quicli::prelude::*;
-use structopt::StructOpt;
+use {
+    quicli::prelude::*,
+    structopt::StructOpt,
+};
+
+use chord::grpc::server::ChordService;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "chord")]
@@ -10,9 +14,7 @@ struct ChordCli {
 
 #[derive(StructOpt, Debug)]
 enum Command {
-    /// Control status for a local or remote node.
     node(NodeCmd),
-    /// Fetch or update key/value data in the ring.
     keys(KeysCmd),
 }
 
@@ -36,4 +38,10 @@ enum KeysCmd {
 
 fn main() {
     let chord = ChordCli::from_args();
+
+    std::env::set_var("RUST_LOG", "chord=debug");
+    pretty_env_logger::init();
+
+    let srv = ChordService::new();
+    srv.serve(&"[::1]:32031".parse().unwrap())
 }
