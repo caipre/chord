@@ -36,6 +36,7 @@ impl ChordService {
             .incoming()
             .map_err(|err| error!("tcp accept failed; err={}", err))
             .for_each(move |sock| {
+                sock.set_nodelay(true).unwrap();
                 tokio::spawn(
                     http2.serve(sock)
                         .map_err(|err| error!("http/2 failed; err={:?}", err)))
