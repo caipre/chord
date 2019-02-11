@@ -34,7 +34,7 @@ impl ChordService {
 
         let serve = TcpListener::bind(addr).unwrap()
             .incoming()
-            .map_err(|err| error!("accept failed; err={}", err))
+            .map_err(|err| error!("tcp accept failed; err={}", err))
             .for_each(move |sock| {
                 tokio::spawn(
                     http2.serve(sock)
