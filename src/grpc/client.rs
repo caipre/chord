@@ -10,37 +10,30 @@ use {
         net::TcpStream,
         prelude::*,
     },
+    tokio::sync::oneshot,
     tower_grpc::{BoxBody, Request, Response},
     tower_h2::client::Connection,
     tower_http::AddOrigin,
 };
 
-pub struct Client {
-    client: Chord<AddOrigin<Connection<TcpStream, DefaultExecutor, BoxBody>>>,
-}
+type ChordClient = Chord<AddOrigin<Connection<TcpStream, DefaultExecutor, BoxBody>>>;
 
-impl Client {
-    pub fn connect(addr: &SocketAddr, origin: Uri) -> Self {
-        let client = TcpStream::connect(addr)
-            .map_err(|err| error!("tcp connect failed; err={:?}", err))
-            .and_then(move |sock| {
-                Connection::handshake(sock, DefaultExecutor::current())
-                    .map_err(|err| error!("http/2 handshake failed; err={:?}", err))
-            })
-            .map(move |conn| {
-                use tower_http::add_origin::Builder;
-                let conn = Builder::new()
-                    .uri(origin)
-                    .build(conn)
-                    .unwrap();
+pub fn connect(addr: &SocketAddr, origin: Uri) -> impl Future<Item=ChordClient, Error=()> {
+    TcpStream::connect(addr)
+        .map_err(|err| error!("tcp connect failed; err={:?}", err))
+        .and_then(move |sock| {
+            Connection::handshake(sock, DefaultExecutor::current())
+                .map_err(|err| error!("http/2 handshake failed; err={:?}", err))
+        })
+        .map(move |conn| {
+            use tower_http::add_origin::Builder;
+            let conn = Builder::new()
+                .uri(origin)
+                .build(conn)
+                .unwrap();
 
-                Chord::new(conn)
-            })
-            .wait()
-            .unwrap();
-
-        Client { client }
-    }
+            Chord::new(conn)
+        })
 }
 
 //
@@ -73,13 +66,10 @@ impl From<tower_grpc::Error<tower_h2::client::Error>> for ClientError {
 
 // node
 
-impl Client {
-    pub fn get_node(&mut self) -> Result<Node, ClientError> {
-        self.client.get_node(Request::new(EmptyRequest {}))
-            .map(|resp| resp.into_inner())
-            .map_err(ClientError::from)
-            .wait()
-    }
+pub fn get_node(mut client: ChordClient) -> impl Future<Item=Node, Error=ClientError> {
+    client.get_node(Request::new(EmptyRequest {}))
+        .map_err(ClientError::from)
+        .map(|resp| resp.into_inner())
 }
 
 // keys

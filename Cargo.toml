@@ -25,4 +25,4 @@ tower-http = { git = 'https://github.com/tower-rs/tower-http' }
 tower-util = { git = 'https://github.com/tower-rs/tower' }
 
 [dev-dependencies]
-proptest = "0.9.0"
+proptest = "0.9.1"
