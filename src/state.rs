@@ -6,7 +6,7 @@ use {
 #[derive(Debug)]
 pub struct State {
     pub node: Node,
-    pub keys: HashMap<String, Vec<u8>>,
+    pub keys: HashMap<String, KeyMeta>,
 }
 
 impl State {

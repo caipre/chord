@@ -47,13 +47,23 @@ enum NodeCmd {
 enum KeysCmd {
     list,
     get(GetKeyCmd),
-    create,
-    update,
+    create(CreateKeyCmd),
+    update(UpdateKeyCmd),
     delete(DeleteKeyCmd),
 }
 
 #[derive(StructOpt, Debug)]
 struct GetKeyCmd {
+    name: String,
+}
+
+#[derive(StructOpt, Debug)]
+struct CreateKeyCmd {
+    name: String,
+}
+
+#[derive(StructOpt, Debug)]
+struct UpdateKeyCmd {
     name: String,
 }
 
@@ -136,8 +146,8 @@ fn main() {
                 .flatten();
             tokio::run(t);
         }
-        Command::keys(KeysCmd::create) => {
-            let key = make_key();
+        Command::keys(KeysCmd::create(args)) => {
+            let key = make_key(args.name);
             let t = task
                 .map(move |mut client| client.create_key(key)
                     .map_err(|err| eprintln!("request failed; err={:?}", err))
@@ -145,8 +155,8 @@ fn main() {
                 .flatten();
             tokio::run(t);
         }
-        Command::keys(KeysCmd::update) => {
-            let key = make_key();
+        Command::keys(KeysCmd::update(args)) => {
+            let key = make_key(args.name);
             let mask = make_mask();
             let t = task
                 .map(move |mut client| client.update_key(key, mask)
@@ -179,9 +189,9 @@ fn make_node() -> Node {
 }
 
 
-fn make_key() -> Key {
+fn make_key(name: String) -> Key {
     Key {
-        name: String::from(""),
+        name: String::from(name),
         data: vec![],
         labels: HashMap::new(),
     }

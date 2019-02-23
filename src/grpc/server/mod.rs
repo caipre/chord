@@ -16,6 +16,7 @@ use {
     tower_h2::Server,
 };
 
+use crate::keys;
 use crate::state::State;
 
 #[derive(Debug, Clone)]
@@ -89,27 +90,63 @@ impl Chord for ChordService {
     // keys
 
     fn list_keys(&mut self, request: Request<ListKeysRequest>) -> Self::ListKeysFuture {
-        let response = Response::new(ListKeysResponse::default());
+        let s = self.inner.read().unwrap();
+        let keymetas = s.keys.values().map(|km| km.clone()).collect();
+        let size = s.keys.len();
+
+        let resp = ListKeysResponse {
+            keys: keymetas,
+            next_page_token: String::from("token"),
+            total_size: size as i32,
+        };
+        let response = Response::new(resp);
         future::ok(response)
     }
 
     fn get_key(&mut self, request: Request<GetKeyRequest>) -> Self::GetKeyFuture {
-        let response = Response::new(KeyMeta::default());
-        future::ok(response)
+        let name = &request.get_ref().name;
+
+        let s = self.inner.read().unwrap();
+        if let Some(keymeta) = s.keys.get(name) {
+            let response = Response::new(keymeta.clone());
+            future::ok(response)
+        } else {
+            future::err(Error::Grpc(Status::with_code(Code::NotFound)))
+        }
     }
 
+    /// fixme: this also updates if the key already existed; should it?
     fn create_key(&mut self, request: Request<CreateKeyRequest>) -> Self::CreateKeyFuture {
-        let response = Response::new(KeyMeta::default());
+        if request.get_ref().key.is_none() {
+            return future::err(Error::Grpc(Status::with_code(Code::InvalidArgument)));
+        }
+
+        let key = request.into_inner().key.unwrap();
+        let keymeta = keys::keymeta(key);
+
+        {
+            let mut s = self.inner.write().unwrap();
+            s.keys.insert(keymeta.name.clone(), keymeta.clone());
+        }
+
+        let response = Response::new(keymeta);
         future::ok(response)
     }
 
     fn update_key(&mut self, request: Request<UpdateKeyRequest>) -> Self::UpdateKeyFuture {
-        let response = Response::new(KeyMeta::default());
-        future::ok(response)
+//        let response = Response::new(KeyMeta::default());
+        future::err(Error::Grpc(Status::with_code(Code::Unimplemented)))
     }
 
     fn delete_key(&mut self, request: Request<DeleteKeyRequest>) -> Self::DeleteKeyFuture {
-        let response = Response::new(EmptyResponse {});
-        future::ok(response)
+        let name = &request.get_ref().name;
+
+        let mut s = self.inner.write().unwrap();
+        if let Some(_) = s.keys.remove(name) {
+            let response = Response::new(EmptyResponse {});
+            future::ok(response)
+        } else {
+            future::err(Error::Grpc(Status::with_code(Code::NotFound)))
+        }
     }
 }
