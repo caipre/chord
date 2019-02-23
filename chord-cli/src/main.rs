@@ -1,5 +1,12 @@
 // fixme: should we be importing chord_rpc or should that be contained in chord?
 
+/// todo:
+///   - add flags for ip, port
+///   - read key data from file
+///   - box chord::grpc::client futures
+///   - figure out server shutdown
+///
+
 use {
     chord::grpc::client,
     chord::grpc::server::ChordService,
@@ -103,10 +110,8 @@ fn main() {
         }
 
         Command::node(NodeCmd::stop) => {
-            let mut node = make_node();
-            node.set_state(RunState::Stopping);
-            let mut mask = make_mask();
-            mask.paths = vec![String::from("state")];
+            let node = make_node();
+            let mask = make_mask();
             let t = task
                 .map(move |mut client| client.update_node(node, mask)
                     .map_err(|err| eprintln!("request failed; err={:?}", err))

@@ -5,6 +5,7 @@ use {
     log::{error, info},
     std::net::SocketAddr,
     std::sync::Arc,
+    std::sync::RwLock,
     tokio::{
         executor::DefaultExecutor,
         net::TcpListener,
@@ -19,12 +20,12 @@ use crate::state::State;
 
 #[derive(Debug, Clone)]
 pub struct ChordService {
-    inner: Arc<State>,
+    inner: Arc<RwLock<State>>,
 }
 
 impl ChordService {
     pub fn new() -> Self {
-        let inner = Arc::new(State);
+        let inner = Arc::new(RwLock::new(State::new()));
         ChordService { inner }
     }
 
@@ -44,8 +45,6 @@ impl ChordService {
 
         tokio::run(serve);
     }
-
-    
 }
 
 
@@ -58,8 +57,10 @@ impl Chord for ChordService {
     type UpdateKeyFuture = FutureResult<Response<KeyMeta>, Error>;
     type DeleteKeyFuture = FutureResult<Response<EmptyResponse>, Error>;
 
+    // nodes
+
     fn get_node(&mut self, request: Request<EmptyRequest>) -> Self::GetNodeFuture {
-        let response = Response::new(Node::default());
+        let response = Response::new(self.inner.read().unwrap().node.clone());
         future::ok(response)
     }
 
@@ -68,11 +69,24 @@ impl Chord for ChordService {
             return future::err(Error::Grpc(Status::with_code(Code::InvalidArgument)));
         }
 
-        info!("patch node to {:?}", request.get_ref().update_mask);
+        let node = request.get_ref().node.as_ref().unwrap();
+        let mask = request.get_ref().update_mask.as_ref().unwrap();
 
-        let response = Response::new(Node::default());
+        {
+            let mut n = self.inner.write().unwrap();
+            for field in mask.paths.iter() {
+                if field == "state" {
+                    let rs = RunState::from_i32(node.state).unwrap();
+                    n.node.set_state(rs);
+                }
+            }
+        }
+
+        let response = Response::new(self.inner.read().unwrap().node.clone());
         future::ok(response)
     }
+
+    // keys
 
     fn list_keys(&mut self, request: Request<ListKeysRequest>) -> Self::ListKeysFuture {
         let response = Response::new(ListKeysResponse::default());
