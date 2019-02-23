@@ -1,16 +1,13 @@
 use {
-    chord_rpc::v1::*,
     chord_rpc::v1::server::Chord,
     chord_rpc::v1::server::ChordServer,
+    chord_rpc::v1::*,
     log::{error, info},
     std::net::SocketAddr,
     std::sync::Arc,
     std::sync::RwLock,
     tokio::{
-        executor::DefaultExecutor,
-        net::TcpListener,
-        prelude::*,
-        prelude::future::FutureResult,
+        executor::DefaultExecutor, net::TcpListener, prelude::future::FutureResult, prelude::*,
     },
     tower_grpc::{Code, Error, Request, Response, Status},
     tower_h2::Server,
@@ -34,20 +31,22 @@ impl ChordService {
         let service = ChordServer::new(self);
         let mut http2 = Server::new(service, Default::default(), DefaultExecutor::current());
 
-        let serve = TcpListener::bind(addr).unwrap()
+        let serve = TcpListener::bind(addr)
+            .unwrap()
             .incoming()
             .map_err(|err| error!("tcp accept failed; err={}", err))
             .for_each(move |sock| {
                 sock.set_nodelay(true).unwrap();
                 tokio::spawn(
-                    http2.serve(sock)
-                        .map_err(|err| error!("http/2 failed; err={:?}", err)))
+                    http2
+                        .serve(sock)
+                        .map_err(|err| error!("http/2 failed; err={:?}", err)),
+                )
             });
 
         tokio::run(serve);
     }
 }
-
 
 impl Chord for ChordService {
     type GetNodeFuture = FutureResult<Response<Node>, Error>;
@@ -134,7 +133,7 @@ impl Chord for ChordService {
     }
 
     fn update_key(&mut self, request: Request<UpdateKeyRequest>) -> Self::UpdateKeyFuture {
-//        let response = Response::new(KeyMeta::default());
+        //        let response = Response::new(KeyMeta::default());
         future::err(Error::Grpc(Status::with_code(Code::Unimplemented)))
     }
 

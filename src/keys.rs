@@ -1,6 +1,4 @@
-use {
-    chord_rpc::v1::*,
-};
+use chord_rpc::v1::*;
 
 //struct Key;
 //
@@ -8,7 +6,6 @@ use {
 //    fn get(&self, id: usize) -> &[u8];
 //    fn put(&self, id: usize, val: &[u8]);
 //}
-
 
 pub fn keymeta(key: Key) -> KeyMeta {
     KeyMeta {

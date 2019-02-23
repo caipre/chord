@@ -6,16 +6,9 @@
 ///   - box chord::grpc::client futures
 ///   - figure out server shutdown
 ///
-
 use {
-    chord::grpc::client,
-    chord::grpc::server::ChordService,
-    chord_rpc::v1::*,
-    futures::prelude::*,
-    prost_types::FieldMask,
-    quicli::prelude::*,
-    std::collections::HashMap,
-    structopt::StructOpt,
+    chord::grpc::client, chord::grpc::server::ChordService, chord_rpc::v1::*, futures::prelude::*,
+    prost_types::FieldMask, quicli::prelude::*, std::collections::HashMap, structopt::StructOpt,
 };
 
 #[derive(StructOpt, Debug)]
@@ -80,7 +73,8 @@ fn main() {
 
     let task = client::connect(
         &"[::1]:32031".parse().unwrap(),
-        "http://localhost:32031".parse().unwrap());
+        "http://localhost:32031".parse().unwrap(),
+    );
 
     match chord.cmd {
         Command::node(NodeCmd::start) => {
@@ -90,9 +84,12 @@ fn main() {
 
         Command::node(NodeCmd::info) => {
             let t = task
-                .map(move |mut client| client.get_node()
-                    .map_err(|err| eprintln!("request failed; err={:?}", err))
-                    .map(|resp| println!("{:?}", resp)))
+                .map(move |mut client| {
+                    client
+                        .get_node()
+                        .map_err(|err| eprintln!("request failed; err={:?}", err))
+                        .map(|resp| println!("{:?}", resp))
+                })
                 .flatten();
             tokio::run(t);
         }
@@ -101,9 +98,12 @@ fn main() {
             let node = make_node();
             let mask = make_mask();
             let t = task
-                .map(move |mut client| client.update_node(node, mask)
-                    .map_err(|err| eprintln!("request failed; err={:?}", err))
-                    .map(|resp| println!("{:?}", resp)))
+                .map(move |mut client| {
+                    client
+                        .update_node(node, mask)
+                        .map_err(|err| eprintln!("request failed; err={:?}", err))
+                        .map(|resp| println!("{:?}", resp))
+                })
                 .flatten();
             tokio::run(t);
         }
@@ -112,9 +112,12 @@ fn main() {
             let node = make_node();
             let mask = make_mask();
             let t = task
-                .map(move |mut client| client.update_node(node, mask)
-                    .map_err(|err| eprintln!("request failed; err={:?}", err))
-                    .map(|resp| println!("{:?}", resp)))
+                .map(move |mut client| {
+                    client
+                        .update_node(node, mask)
+                        .map_err(|err| eprintln!("request failed; err={:?}", err))
+                        .map(|resp| println!("{:?}", resp))
+                })
                 .flatten();
             tokio::run(t);
         }
@@ -123,35 +126,47 @@ fn main() {
             let node = make_node();
             let mask = make_mask();
             let t = task
-                .map(move |mut client| client.update_node(node, mask)
-                    .map_err(|err| eprintln!("request failed; err={:?}", err))
-                    .map(|resp| println!("{:?}", resp)))
+                .map(move |mut client| {
+                    client
+                        .update_node(node, mask)
+                        .map_err(|err| eprintln!("request failed; err={:?}", err))
+                        .map(|resp| println!("{:?}", resp))
+                })
                 .flatten();
             tokio::run(t);
         }
 
         Command::keys(KeysCmd::list) => {
             let t = task
-                .map(move |mut client| client.list_keys()
-                    .map_err(|err| eprintln!("request failed; err={:?}", err))
-                    .map(|resp| println!("{:?}", resp)))
+                .map(move |mut client| {
+                    client
+                        .list_keys()
+                        .map_err(|err| eprintln!("request failed; err={:?}", err))
+                        .map(|resp| println!("{:?}", resp))
+                })
                 .flatten();
             tokio::run(t);
         }
         Command::keys(KeysCmd::get(args)) => {
             let t = task
-                .map(move |mut client| client.get_key(args.name.as_str())
-                    .map_err(|err| eprintln!("request failed; err={:?}", err))
-                    .map(|resp| println!("{:?}", resp)))
+                .map(move |mut client| {
+                    client
+                        .get_key(args.name.as_str())
+                        .map_err(|err| eprintln!("request failed; err={:?}", err))
+                        .map(|resp| println!("{:?}", resp))
+                })
                 .flatten();
             tokio::run(t);
         }
         Command::keys(KeysCmd::create(args)) => {
             let key = make_key(args.name);
             let t = task
-                .map(move |mut client| client.create_key(key)
-                    .map_err(|err| eprintln!("request failed; err={:?}", err))
-                    .map(|resp| println!("{:?}", resp)))
+                .map(move |mut client| {
+                    client
+                        .create_key(key)
+                        .map_err(|err| eprintln!("request failed; err={:?}", err))
+                        .map(|resp| println!("{:?}", resp))
+                })
                 .flatten();
             tokio::run(t);
         }
@@ -159,17 +174,23 @@ fn main() {
             let key = make_key(args.name);
             let mask = make_mask();
             let t = task
-                .map(move |mut client| client.update_key(key, mask)
-                    .map_err(|err| eprintln!("request failed; err={:?}", err))
-                    .map(|resp| println!("{:?}", resp)))
+                .map(move |mut client| {
+                    client
+                        .update_key(key, mask)
+                        .map_err(|err| eprintln!("request failed; err={:?}", err))
+                        .map(|resp| println!("{:?}", resp))
+                })
                 .flatten();
             tokio::run(t);
         }
         Command::keys(KeysCmd::delete(args)) => {
             let t = task
-                .map(move |mut client| client.delete_key(args.name.as_str())
-                    .map_err(|err| eprintln!("request failed; err={:?}", err))
-                    .map(|resp| println!("{:?}", resp)))
+                .map(move |mut client| {
+                    client
+                        .delete_key(args.name.as_str())
+                        .map_err(|err| eprintln!("request failed; err={:?}", err))
+                        .map(|resp| println!("{:?}", resp))
+                })
                 .flatten();
             tokio::run(t);
         }
@@ -188,7 +209,6 @@ fn make_node() -> Node {
     }
 }
 
-
 fn make_key(name: String) -> Key {
     Key {
         name: String::from(name),
@@ -198,7 +218,5 @@ fn make_key(name: String) -> Key {
 }
 
 fn make_mask() -> FieldMask {
-    FieldMask {
-        paths: vec![],
-    }
+    FieldMask { paths: vec![] }
 }

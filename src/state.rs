@@ -1,7 +1,4 @@
-use {
-    chord_rpc::v1::*,
-    std::collections::HashMap,
-};
+use {chord_rpc::v1::*, std::collections::HashMap};
 
 #[derive(Debug)]
 pub struct State {

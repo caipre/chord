@@ -3,11 +3,7 @@ use {
     http::Uri,
     log::{error, info},
     std::net::SocketAddr,
-    tokio::{
-        executor::DefaultExecutor,
-        net::TcpStream,
-        prelude::*,
-    },
+    tokio::{executor::DefaultExecutor, net::TcpStream, prelude::*},
     tower_grpc::BoxBody,
     tower_h2::client::Connection,
     tower_http::AddOrigin,
@@ -20,7 +16,7 @@ pub struct ChordClient {
     client: Chord<AddOrigin<Connection<TcpStream, DefaultExecutor, BoxBody>>>,
 }
 
-pub fn connect(addr: &SocketAddr, origin: Uri) -> impl Future<Item=ChordClient, Error=()> {
+pub fn connect(addr: &SocketAddr, origin: Uri) -> impl Future<Item = ChordClient, Error = ()> {
     TcpStream::connect(addr)
         .map_err(|err| error!("tcp connect failed; err={:?}", err))
         .and_then(move |sock| {
@@ -29,11 +25,10 @@ pub fn connect(addr: &SocketAddr, origin: Uri) -> impl Future<Item=ChordClient, 
         })
         .map(move |conn| {
             use tower_http::add_origin::Builder;
-            let conn = Builder::new()
-                .uri(origin)
-                .build(conn)
-                .unwrap();
+            let conn = Builder::new().uri(origin).build(conn).unwrap();
 
-            ChordClient { client: Chord::new(conn) }
+            ChordClient {
+                client: Chord::new(conn),
+            }
         })
 }
