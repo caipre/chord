@@ -50,10 +50,10 @@ fn main() {
             srv.serve(&"[::1]:32031".parse().unwrap())
         }
         Command::node(NodeCmd::info) => {
-            let mut task = client::connect(
+            let task = client::connect(
                 &"[::1]:32031".parse().unwrap(),
                 "http://localhost:32031".parse().unwrap())
-                .map(move |c| client::get_node(c)
+                .map(move |c| c.get_node()
                     .map_err(|err| eprintln!("request failed; err={:?}", err))
                     .map(|resp| println!("{:?}", resp)))
                 .flatten();

@@ -16,7 +16,9 @@ use {
     tower_http::AddOrigin,
 };
 
-type ChordClient = Chord<AddOrigin<Connection<TcpStream, DefaultExecutor, BoxBody>>>;
+pub struct ChordClient {
+    client: Chord<AddOrigin<Connection<TcpStream, DefaultExecutor, BoxBody>>>,
+}
 
 pub fn connect(addr: &SocketAddr, origin: Uri) -> impl Future<Item=ChordClient, Error=()> {
     TcpStream::connect(addr)
@@ -32,7 +34,7 @@ pub fn connect(addr: &SocketAddr, origin: Uri) -> impl Future<Item=ChordClient, 
                 .build(conn)
                 .unwrap();
 
-            Chord::new(conn)
+            ChordClient { client: Chord::new(conn) }
         })
 }
 
@@ -66,10 +68,12 @@ impl From<tower_grpc::Error<tower_h2::client::Error>> for ClientError {
 
 // node
 
-pub fn get_node(mut client: ChordClient) -> impl Future<Item=Node, Error=ClientError> {
-    client.get_node(Request::new(EmptyRequest {}))
-        .map_err(ClientError::from)
-        .map(|resp| resp.into_inner())
+impl ChordClient {
+    pub fn get_node(mut self) -> impl Future<Item=Node, Error=ClientError> {
+        self.client.get_node(Request::new(EmptyRequest {}))
+            .map_err(ClientError::from)
+            .map(|resp| resp.into_inner())
+    }
 }
 
 // keys
