@@ -44,6 +44,8 @@ impl ChordService {
 
         tokio::run(serve);
     }
+
+    
 }
 
 
@@ -65,6 +67,8 @@ impl Chord for ChordService {
         if request.get_ref().node.is_none() {
             return future::err(Error::Grpc(Status::with_code(Code::InvalidArgument)));
         }
+
+        info!("patch node to {:?}", request.get_ref().update_mask);
 
         let response = Response::new(Node::default());
         future::ok(response)

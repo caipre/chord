@@ -1,11 +1,15 @@
+// fixme: should we be importing chord_rpc or should that be contained in chord?
+
 use {
+    chord::grpc::client,
+    chord::grpc::server::ChordService,
+    chord_rpc::v1::*,
     futures::prelude::*,
+    prost_types::FieldMask,
     quicli::prelude::*,
+    std::collections::HashMap,
     structopt::StructOpt,
-    tokio::prelude::*,
 };
-use chord::grpc::client;
-use chord::grpc::server::ChordService;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "chord")]
@@ -15,12 +19,14 @@ struct ChordCli {
 }
 
 #[derive(StructOpt, Debug)]
+#[allow(non_camel_case_types)]
 enum Command {
     node(NodeCmd),
     keys(KeysCmd),
 }
 
 #[derive(StructOpt, Debug)]
+#[allow(non_camel_case_types)]
 enum NodeCmd {
     start,
     info,
@@ -30,35 +36,154 @@ enum NodeCmd {
 }
 
 #[derive(StructOpt, Debug)]
+#[allow(non_camel_case_types)]
 enum KeysCmd {
     list,
-    get,
+    get(GetKeyCmd),
     create,
     update,
-    delete,
+    delete(DeleteKeyCmd),
+}
+
+#[derive(StructOpt, Debug)]
+struct GetKeyCmd {
+    name: String,
+}
+
+#[derive(StructOpt, Debug)]
+struct DeleteKeyCmd {
+    name: String,
 }
 
 fn main() {
     let chord = ChordCli::from_args();
 
-//    std::env::set_var("RUST_LOG", "trace");
+    std::env::set_var("RUST_LOG", "info");
     pretty_env_logger::init();
+
+    let task = client::connect(
+        &"[::1]:32031".parse().unwrap(),
+        "http://localhost:32031".parse().unwrap());
 
     match chord.cmd {
         Command::node(NodeCmd::start) => {
             let srv = ChordService::new();
             srv.serve(&"[::1]:32031".parse().unwrap())
         }
+
         Command::node(NodeCmd::info) => {
-            let task = client::connect(
-                &"[::1]:32031".parse().unwrap(),
-                "http://localhost:32031".parse().unwrap())
-                .map(move |c| c.get_node()
+            let t = task
+                .map(move |mut client| client.get_node()
                     .map_err(|err| eprintln!("request failed; err={:?}", err))
                     .map(|resp| println!("{:?}", resp)))
                 .flatten();
-            tokio::run(task);
+            tokio::run(t);
         }
-        _ => unimplemented!()
+
+        Command::node(NodeCmd::enable) => {
+            let node = make_node();
+            let mask = make_mask();
+            let t = task
+                .map(move |mut client| client.update_node(node, mask)
+                    .map_err(|err| eprintln!("request failed; err={:?}", err))
+                    .map(|resp| println!("{:?}", resp)))
+                .flatten();
+            tokio::run(t);
+        }
+
+        Command::node(NodeCmd::disable) => {
+            let node = make_node();
+            let mask = make_mask();
+            let t = task
+                .map(move |mut client| client.update_node(node, mask)
+                    .map_err(|err| eprintln!("request failed; err={:?}", err))
+                    .map(|resp| println!("{:?}", resp)))
+                .flatten();
+            tokio::run(t);
+        }
+
+        Command::node(NodeCmd::stop) => {
+            let mut node = make_node();
+            node.set_state(RunState::Stopping);
+            let mut mask = make_mask();
+            mask.paths = vec![String::from("state")];
+            let t = task
+                .map(move |mut client| client.update_node(node, mask)
+                    .map_err(|err| eprintln!("request failed; err={:?}", err))
+                    .map(|resp| println!("{:?}", resp)))
+                .flatten();
+            tokio::run(t);
+        }
+
+        Command::keys(KeysCmd::list) => {
+            let t = task
+                .map(move |mut client| client.list_keys()
+                    .map_err(|err| eprintln!("request failed; err={:?}", err))
+                    .map(|resp| println!("{:?}", resp)))
+                .flatten();
+            tokio::run(t);
+        }
+        Command::keys(KeysCmd::get(args)) => {
+            let t = task
+                .map(move |mut client| client.get_key(args.name.as_str())
+                    .map_err(|err| eprintln!("request failed; err={:?}", err))
+                    .map(|resp| println!("{:?}", resp)))
+                .flatten();
+            tokio::run(t);
+        }
+        Command::keys(KeysCmd::create) => {
+            let key = make_key();
+            let t = task
+                .map(move |mut client| client.create_key(key)
+                    .map_err(|err| eprintln!("request failed; err={:?}", err))
+                    .map(|resp| println!("{:?}", resp)))
+                .flatten();
+            tokio::run(t);
+        }
+        Command::keys(KeysCmd::update) => {
+            let key = make_key();
+            let mask = make_mask();
+            let t = task
+                .map(move |mut client| client.update_key(key, mask)
+                    .map_err(|err| eprintln!("request failed; err={:?}", err))
+                    .map(|resp| println!("{:?}", resp)))
+                .flatten();
+            tokio::run(t);
+        }
+        Command::keys(KeysCmd::delete(args)) => {
+            let t = task
+                .map(move |mut client| client.delete_key(args.name.as_str())
+                    .map_err(|err| eprintln!("request failed; err={:?}", err))
+                    .map(|resp| println!("{:?}", resp)))
+                .flatten();
+            tokio::run(t);
+        }
+    }
+}
+
+//
+
+fn make_node() -> Node {
+    Node {
+        name: String::from("node_name"),
+        state: RunState::Starting.into(),
+        predecessor: String::from("1.1.1.1"),
+        routes: vec![],
+        successors: vec![],
+    }
+}
+
+
+fn make_key() -> Key {
+    Key {
+        name: String::from(""),
+        data: vec![],
+        labels: HashMap::new(),
+    }
+}
+
+fn make_mask() -> FieldMask {
+    FieldMask {
+        paths: vec![],
     }
 }

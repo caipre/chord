@@ -17,6 +17,7 @@ env_logger = "0.6.0"
 futures = "0.1.25"
 http = "0.1.15"
 log = "0.4.6"
+prost-types = "0.4.0"
 tokio = "0.1.15"
 tokio-connect = { git = "https://github.com/carllerche/tokio-connect" }
 tower-grpc = { git = 'https://github.com/tower-rs/tower-grpc' }

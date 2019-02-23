@@ -64,12 +64,12 @@ message ListKeysRequest {
     reserved 1;
     int32 page_size = 2;
     string page_token = 3;
-    int32 total_size = 4;
 }
 
 message ListKeysResponse {
     repeated KeyMeta keys = 1;
     string next_page_token = 2;
+    int32 total_size = 3;
 }
 
 message GetKeyRequest {

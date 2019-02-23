@@ -6,10 +6,12 @@ edition = "2018"
 
 [dependencies]
 chord = { path = "../" }
+chord-rpc = { path = "../chord-rpc" }
 env_logger = "0.6.0"
 futures = "0.1.25"
 log = "0.4.6"
 pretty_env_logger = "0.3.0"
+prost-types = "0.4.0"
 quicli = "0.4.0"
 structopt = "0.2.14"
 tokio = "0.1.15"
