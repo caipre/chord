@@ -2,8 +2,7 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum ClientError {
-    GrpcError(tower_grpc::Error),
-    HttpError(tower_grpc::Error<tower_h2::client::Error>),
+    GrpcError(tower_grpc::Status),
 }
 
 impl fmt::Display for ClientError {
@@ -14,14 +13,8 @@ impl fmt::Display for ClientError {
 
 impl std::error::Error for ClientError {}
 
-impl From<tower_grpc::Error> for ClientError {
-    fn from(err: tower_grpc::Error) -> Self {
+impl From<tower_grpc::Status> for ClientError {
+    fn from(err: tower_grpc::Status) -> Self {
         ClientError::GrpcError(err)
-    }
-}
-
-impl From<tower_grpc::Error<tower_h2::client::Error>> for ClientError {
-    fn from(err: tower_grpc::Error<tower_h2::client::Error>) -> Self {
-        ClientError::HttpError(err)
     }
 }

@@ -18,7 +18,7 @@ impl Entry {
 }
 
 #[derive(Debug)]
-struct Node {
+pub struct Node {
     id: usize,
     state: RunState,
     next: usize,

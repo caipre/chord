@@ -1,15 +1,15 @@
 use {
+    chord_rpc::v1::*,
     chord_rpc::v1::server::Chord,
     chord_rpc::v1::server::ChordServer,
-    chord_rpc::v1::*,
     log::{error, info},
     std::net::SocketAddr,
     std::sync::Arc,
     std::sync::RwLock,
     tokio::{
-        executor::DefaultExecutor, net::TcpListener, prelude::future::FutureResult, prelude::*,
+        executor::DefaultExecutor, net::TcpListener, prelude::*, prelude::future::FutureResult,
     },
-    tower_grpc::{Code, Error, Request, Response, Status},
+    tower_grpc::{Code, Request, Response, Status},
     tower_h2::Server,
 };
 
@@ -49,13 +49,13 @@ impl ChordService {
 }
 
 impl Chord for ChordService {
-    type GetNodeFuture = FutureResult<Response<Node>, Error>;
-    type UpdateNodeFuture = FutureResult<Response<Node>, Error>;
-    type ListKeysFuture = FutureResult<Response<ListKeysResponse>, Error>;
-    type GetKeyFuture = FutureResult<Response<KeyMeta>, Error>;
-    type CreateKeyFuture = FutureResult<Response<KeyMeta>, Error>;
-    type UpdateKeyFuture = FutureResult<Response<KeyMeta>, Error>;
-    type DeleteKeyFuture = FutureResult<Response<EmptyResponse>, Error>;
+    type GetNodeFuture = FutureResult<Response<Node>, Status>;
+    type UpdateNodeFuture = FutureResult<Response<Node>, Status>;
+    type ListKeysFuture = FutureResult<Response<ListKeysResponse>, Status>;
+    type GetKeyFuture = FutureResult<Response<KeyMeta>, Status>;
+    type CreateKeyFuture = FutureResult<Response<KeyMeta>, Status>;
+    type UpdateKeyFuture = FutureResult<Response<KeyMeta>, Status>;
+    type DeleteKeyFuture = FutureResult<Response<EmptyResponse>, Status>;
 
     // nodes
 
@@ -66,7 +66,7 @@ impl Chord for ChordService {
 
     fn update_node(&mut self, request: Request<UpdateNodeRequest>) -> Self::UpdateNodeFuture {
         if request.get_ref().node.is_none() {
-            return future::err(Error::Grpc(Status::with_code(Code::InvalidArgument)));
+            return future::err(Status::with_code(Code::InvalidArgument));
         }
 
         let node = request.get_ref().node.as_ref().unwrap();
@@ -110,14 +110,14 @@ impl Chord for ChordService {
             let response = Response::new(keymeta.clone());
             future::ok(response)
         } else {
-            future::err(Error::Grpc(Status::with_code(Code::NotFound)))
+            future::err(Status::with_code(Code::NotFound))
         }
     }
 
     /// fixme: this also updates if the key already existed; should it?
     fn create_key(&mut self, request: Request<CreateKeyRequest>) -> Self::CreateKeyFuture {
         if request.get_ref().key.is_none() {
-            return future::err(Error::Grpc(Status::with_code(Code::InvalidArgument)));
+            return future::err(Status::with_code(Code::InvalidArgument));
         }
 
         let key = request.into_inner().key.unwrap();
@@ -134,7 +134,7 @@ impl Chord for ChordService {
 
     fn update_key(&mut self, request: Request<UpdateKeyRequest>) -> Self::UpdateKeyFuture {
         //        let response = Response::new(KeyMeta::default());
-        future::err(Error::Grpc(Status::with_code(Code::Unimplemented)))
+        future::err(Status::with_code(Code::Unimplemented))
     }
 
     fn delete_key(&mut self, request: Request<DeleteKeyRequest>) -> Self::DeleteKeyFuture {
@@ -145,7 +145,7 @@ impl Chord for ChordService {
             let response = Response::new(EmptyResponse {});
             future::ok(response)
         } else {
-            future::err(Error::Grpc(Status::with_code(Code::NotFound)))
+            future::err(Status::with_code(Code::NotFound))
         }
     }
 }
