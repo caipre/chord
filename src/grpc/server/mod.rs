@@ -14,16 +14,16 @@ use {
 };
 
 use crate::keys;
-use crate::state::State;
+use crate::ChordNode;
 
 #[derive(Debug, Clone)]
 pub struct ChordService {
-    inner: Arc<RwLock<State>>,
+    inner: Arc<RwLock<ChordNode>>,
 }
 
 impl ChordService {
     pub fn new() -> Self {
-        let inner = Arc::new(RwLock::new(State::new()));
+        let inner = Arc::new(RwLock::new(ChordNode::new()));
         ChordService { inner }
     }
 
@@ -60,7 +60,7 @@ impl Chord for ChordService {
     // nodes
 
     fn get_node(&mut self, request: Request<EmptyRequest>) -> Self::GetNodeFuture {
-        let response = Response::new(self.inner.read().unwrap().node.clone());
+        let response = Response::new(self.inner.read().unwrap().clone());
         future::ok(response)
     }
 
@@ -73,16 +73,16 @@ impl Chord for ChordService {
         let mask = request.get_ref().update_mask.as_ref().unwrap();
 
         {
-            let mut n = self.inner.write().unwrap();
+            let mut s = self.inner.write().unwrap();
             for field in mask.paths.iter() {
                 if field == "state" {
                     let rs = RunState::from_i32(node.state).unwrap();
-                    n.node.set_state(rs);
+                    s.node.set_state(rs);
                 }
             }
         }
 
-        let response = Response::new(self.inner.read().unwrap().node.clone());
+        let response = Response::new(self.inner.read().unwrap().clone());
         future::ok(response)
     }
 
@@ -149,3 +149,4 @@ impl Chord for ChordService {
         }
     }
 }
+
