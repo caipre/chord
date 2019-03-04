@@ -79,7 +79,7 @@ fn main() {
     match chord.cmd {
         Command::node(NodeCmd::start) => {
             let srv = ChordService::new();
-            srv.serve(&"[::1]:32031".parse().unwrap())
+            srv.serve("[::1]:32031".parse().unwrap())
         }
 
         Command::node(NodeCmd::info) => {
