@@ -12,9 +12,9 @@ service Chord {
         };
     }
 
-    rpc GetClosestPeer (GetClosestPeerRequest) returns (Peer) {
+    rpc GetClosestNode (GetClosestNodeRequest) returns (Node) {
         option (google.api.http) = {
-            get: "/v1/peer"
+            get: "/v1/node{id=?preceding=*}"
         };
     }
 
@@ -47,7 +47,7 @@ service Chord {
 
 ///
 
-message GetClosestPeerRequest {
+message GetClosestNodeRequest {
     uint64 id = 1;
 }
 
@@ -79,12 +79,6 @@ message DeleteKeyRequest {
 ///
 
 message Node {
-    uint64 id = 1;
-    Peer predecessor = 2;
-    Peer successor = 3;
-}
-
-message Peer {
     uint64 id = 1;
     string addr = 2;
 }

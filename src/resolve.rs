@@ -8,10 +8,10 @@ use tower_grpc::Status;
 use super::ChordService;
 use super::client::ChordClient;
 use super::errors::ClientError;
-use super::Node;
+use super::server::Node;
 
 impl ChordService {
-    /// Return a client connected to the peer responsible for an id.
+    /// Return a client connected to the node responsible for an id.
     fn find(&mut self, id: u64) -> impl Future<Item=ChordClient, Error=ClientError> {
         future::err(ClientError::GrpcError(Status::with_code(Code::Unimplemented)))
 //        self.predecessor(id)
@@ -19,7 +19,7 @@ impl ChordService {
 //            .flatten()
     }
 
-    /// Return a client connected to the peer immediately preceding an id.
+    /// Return a client connected to the node immediately preceding an id.
     fn predecessor(&mut self, id: u64) -> impl Future<Item=ChordClient, Error=ClientError> {
         future::err(ClientError::GrpcError(Status::with_code(Code::Unimplemented)))
 //        self.client_for(self.into())
@@ -31,30 +31,30 @@ impl ChordService {
 //            })
     }
 
-    /// Return the peer close to and preceding an id.
-    fn preceding(&self, id: u64) -> Node {
-        for entry in self.entries.iter().rev() {
-            if Range::full_open(self.id, id).contains(entry.node.id) {
+    /// Return the node close to and preceding an id.
+    pub fn preceding(&self, id: u64) -> Node {
+        for entry in self.ftab.iter().rev() {
+            if Range::full_open(self.node.id, id).contains(entry.node.id) {
                 return entry.node;
             }
         }
         self.into()
     }
 
-    /// Return a client connected to the successor of a peer.
-    fn successor(&mut self, peer: Node) -> impl Future<Item=ChordClient, Error=ClientError> {
+    /// Return a client connected to the successor of a node.
+    fn successor(&mut self, node: Node) -> impl Future<Item=ChordClient, Error=ClientError> {
         future::err(ClientError::GrpcError(Status::with_code(Code::Unimplemented)))
-//        self.client_for(peer)
+//        self.client_for(node)
 //            .and_then(|mut client| client.get_node()).flatten()
 //            .and_then(|v1node| self.client_for(v1node.successor.into()))
 //            .flatten()
     }
 
-    fn client_for(&mut self, peer: Node) -> impl Future<Item=ChordClient, Error=()> {
+    fn client_for(&mut self, node: Node) -> impl Future<Item=ChordClient, Error=()> {
         future::err(())
 //        // fixme: shouldn't need a new client every time
 //        let origin = self.addr.into();
-//        grpc::client::connect(&peer.addr, origin)
+//        grpc::client::connect(&node.addr, origin)
     }
 }
 

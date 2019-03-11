@@ -1,5 +1,7 @@
 //! Traits and types for the Chord API
 
+pub use self::chord::v1;
+
 #[allow(dead_code)]
 mod chord {
     pub mod v1 {
@@ -8,4 +10,3 @@ mod chord {
     }
 }
 
-pub use self::chord::v1;

@@ -4,34 +4,37 @@ use http::Uri;
 use log::{error, info};
 use tokio::{executor::DefaultExecutor, net::TcpStream};
 use tokio::prelude::*;
+use tower_add_origin::AddOrigin;
 use tower_grpc::{BoxBody, Request};
 use tower_h2::client::Connection;
-use tower_http::AddOrigin;
 
 use chord_rpc::v1;
 use chord_rpc::v1::client::Chord;
 
 use super::errors::ClientError;
 
+#[derive(Clone)]
 pub struct ChordClient {
     client: Chord<AddOrigin<Connection<TcpStream, DefaultExecutor, BoxBody>>>,
 }
 
-pub fn connect(addr: &SocketAddr, origin: Uri) -> impl Future<Item=ChordClient, Error=()> {
-    TcpStream::connect(addr)
-        .map_err(|err| error!("tcp connect failed; err={:?}", err))
-        .and_then(move |sock| {
-            Connection::handshake(sock, DefaultExecutor::current())
-                .map_err(|err| error!("http/2 handshake failed; err={:?}", err))
-        })
-        .map(move |conn| {
-            use tower_http::add_origin::Builder;
-            let conn = Builder::new().uri(origin).build(conn).unwrap();
+impl ChordClient {
+    pub fn connect(addr: &SocketAddr, origin: Uri) -> impl Future<Item=ChordClient, Error=()> {
+        TcpStream::connect(addr)
+            .map_err(|err| error!("tcp connect failed; err={:?}", err))
+            .and_then(move |sock| {
+                Connection::handshake(sock, DefaultExecutor::current())
+                    .map_err(|err| error!("http/2 handshake failed; err={:?}", err))
+            })
+            .map(move |conn| {
+                use tower_add_origin::Builder;
+                let conn = Builder::new().uri(origin).build(conn).unwrap();
 
-            ChordClient {
-                client: Chord::new(conn),
-            }
-        })
+                ChordClient {
+                    client: Chord::new(conn),
+                }
+            })
+    }
 }
 
 impl ChordClient {
@@ -42,10 +45,10 @@ impl ChordClient {
             .map(|resp| resp.into_inner())
     }
 
-    pub fn get_closest_peer(&mut self, id: u64) -> impl Future<Item=v1::Peer, Error=ClientError> {
-        let req = v1::GetClosestPeerRequest { id };
+    pub fn get_closest_node(&mut self, id: u64) -> impl Future<Item=v1::Node, Error=ClientError> {
+        let req = v1::GetClosestNodeRequest { id };
         self.client
-            .get_closest_peer(Request::new(req))
+            .get_closest_node(Request::new(req))
             .map_err(ClientError::from)
             .map(|resp| resp.into_inner())
     }
