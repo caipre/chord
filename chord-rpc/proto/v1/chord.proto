@@ -3,10 +3,11 @@ syntax = "proto3";
 package chord.v1;
 
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 service Chord {
-    rpc GetNode (EmptyRequest) returns (Node) {
+    rpc GetNode (google.protobuf.Empty) returns (Node) {
         option (google.api.http) = {
             get: "/v1/node"
         };
@@ -36,9 +37,7 @@ service Chord {
         };
     }
 
-    // fixme: this should return google.protobuf.Empty
-    // https://github.com/tower-rs/tower-grpc/issues/81
-    rpc DeleteKey (DeleteKeyRequest) returns (EmptyResponse) {
+    rpc DeleteKey (DeleteKeyRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             delete: "/v1/{name=keys/*}"
         };
@@ -87,9 +86,4 @@ message Key {
     string name = 1;
     bytes data = 2;
     map<string, string> labels = 3;
-}
-
-message EmptyRequest {
-}
-message EmptyResponse {
 }
