@@ -5,10 +5,8 @@ authors = ["Nick Platt <platt.nicholas@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-bytes = "0.4.11"
-prost = "0.4.0"
-prost-derive = "0.4.0"
-prost-types = "0.4.0"
+bytes = "0.4.12"
+prost = "0.5.0"
 tower-grpc = { git = 'https://github.com/tower-rs/tower-grpc' }
 
 [build-dependencies]

@@ -3,19 +3,19 @@ syntax = "proto3";
 package chord.v1;
 
 import "google/api/annotations.proto";
-import "google/protobuf/field_mask.proto";
+import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 service Chord {
-    rpc GetNode (EmptyRequest) returns (Node) {
+    rpc GetNode (google.protobuf.Empty) returns (Node) {
         option (google.api.http) = {
             get: "/v1/node"
         };
     }
 
-    rpc UpdateNode (UpdateNodeRequest) returns (Node) {
+    rpc GetClosestNode (GetClosestNodeRequest) returns (Node) {
         option (google.api.http) = {
-            patch: "/v1/node"
+            get: "/v1/node{id=?preceding=*}"
         };
     }
 
@@ -25,27 +25,19 @@ service Chord {
         };
     }
 
-    rpc GetKey (GetKeyRequest) returns (KeyMeta) {
+    rpc GetKey (GetKeyRequest) returns (Key) {
         option (google.api.http) = {
             get: "/v1/{name=keys/*}"
         };
     }
 
-    rpc CreateKey (CreateKeyRequest) returns (KeyMeta) {
+    rpc CreateKey (CreateKeyRequest) returns (Key) {
         option (google.api.http) = {
             post: "/v1/keys"
         };
     }
 
-    rpc UpdateKey (UpdateKeyRequest) returns (KeyMeta) {
-        option (google.api.http) = {
-            patch: "/v1/{name=keys/*}"
-        };
-    }
-
-    // fixme: this should return google.protobuf.Empty
-    // https://github.com/tower-rs/tower-grpc/issues/81
-    rpc DeleteKey (DeleteKeyRequest) returns (EmptyResponse) {
+    rpc DeleteKey (DeleteKeyRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             delete: "/v1/{name=keys/*}"
         };
@@ -54,9 +46,8 @@ service Chord {
 
 ///
 
-message UpdateNodeRequest {
-    Node node = 1;
-    google.protobuf.FieldMask update_mask = 2;
+message GetClosestNodeRequest {
+    uint64 id = 1;
 }
 
 message ListKeysRequest {
@@ -67,7 +58,7 @@ message ListKeysRequest {
 }
 
 message ListKeysResponse {
-    repeated KeyMeta keys = 1;
+    repeated Key keys = 1;
     string next_page_token = 2;
     int32 total_size = 3;
 }
@@ -80,11 +71,6 @@ message CreateKeyRequest {
     Key key = 1;
 }
 
-message UpdateKeyRequest {
-    Key key = 1;
-    google.protobuf.FieldMask update_mask = 2;
-}
-
 message DeleteKeyRequest {
     string name = 1;
 }
@@ -92,44 +78,12 @@ message DeleteKeyRequest {
 ///
 
 message Node {
-    string name = 1;
-    RunState state = 2;
-
-    string predecessor = 3;
-    repeated Route routes = 4;
-    repeated string successors = 5;
-}
-
-enum RunState {
-    STARTING = 0;
-    WAITING = 1;
-    READY = 2;
-    RUNNING = 3;
-    STOPPING = 4;
-}
-
-message Route {
-    string uri = 1;
-    string start_key = 2;
-    string end_key = 3;
+    uint64 id = 1;
+    string addr = 2;
 }
 
 message Key {
     string name = 1;
     bytes data = 2;
     map<string, string> labels = 3;
-}
-
-message KeyMeta {
-    google.protobuf.Timestamp create_time = 1;
-    google.protobuf.Timestamp update_time = 2;
-    string name = 3;
-    bytes data = 4;
-    map<string, string> labels = 5;
-}
-
-
-message EmptyRequest {
-}
-message EmptyResponse {
 }
